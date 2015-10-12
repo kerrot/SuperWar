@@ -78,7 +78,14 @@ void myReshape(int w, int h)
 void keyborad1(int key, int x, int y){
 	if (game.get(STATE) == ENEMYTURN)
 	{
-		return;
+		if (key == GLUT_KEY_F12)
+		{
+			game.init(OURTURN);
+		}
+		else
+		{
+			return;
+		}
 	}
 
 	switch(key){
