@@ -53,7 +53,7 @@ class Soldier{
 		Soldier();
 		void init(int value[]);
 		virtual bool move(int d, Map &map);								//¦b¦a¹Ï¤W²¾°Ê d:¤è¦V
-		void stop(bool type);						//¥ð®§©Î«Ý¾E
+		virtual void stop(bool type);						//¥ð®§©Î«Ý¾E
 		void over();								//²¾°Êµ²§E
 		void attack(Soldier &s);					//§ðÀ» Soldier &s 
 		void act();										//³Q§ðÀ»®É 
@@ -68,7 +68,7 @@ class Soldier{
 		virtual bool canmove(char maptype, int who_on_it);
 		~Soldier();
 		static void load();
-	private:
+	protected:
 		static GLMmodel* modelPtr[7];
 		static GLuint soldierstate;
 		int faced;
@@ -110,6 +110,7 @@ class Enemy : public Soldier{
 		Enemy();
 		virtual bool move(int d, Map &map);
 		virtual bool canmove(char maptype, int who_on_it);
+		virtual void stop(bool type);
 		void display(float cursorx, float cursory);
 		~Enemy();
 		//virtual void special(Soldier &s);
@@ -264,6 +265,7 @@ class Game{
 		template<typename returntype> returntype* getclass(int choice);
 		static void drawtext(char *str, int posx, int posy);
 		bool showfps;
+		bool canfight;
 		static bool check(float x, float y, float z, float r);
 		~Game();
 	private:

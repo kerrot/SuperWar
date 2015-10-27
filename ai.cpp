@@ -5,24 +5,32 @@
 #include<time.h>
 #include<gl/glut.h>
 #include<iostream>
-#define TIME 1000
+#define TIME 16
 using namespace std;
 
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 
 Game game;
 
+int counter = 0;
 void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	game.display();
-
+	
     glutSwapBuffers ();
 }
 
 void timer(int value){
-	game.showfps = true;
+	++counter;
+	if (counter > 60)
+	{
+		game.showfps = true;
+		counter = 0;
+	}
+	
+	game.canfight = true;
 	glutTimerFunc(TIME, timer, 1);
 }
 

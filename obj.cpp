@@ -20,6 +20,7 @@ Game::Game(){
 	friends = NULL;
 	view = ORTHO2D;
 	fps = 0;
+	canfight = false;
 }
 
 Game::~Game(){
@@ -40,7 +41,17 @@ void Game::display(){
 		case TOOURTURN :	break;
 		case TOENEMYTURN :	break;
 		case GAMEMENU :		gamemenuscene();break;
-		case FIGHTSTAGE :	fightscene();break;
+		case FIGHTSTAGE:	{
+								if (canfight)
+								{
+									fightscene();
+									canfight = false;
+								}
+								else
+								{
+									fightturn.drawstage(enemys, friends);
+								}
+							}break;
 		case LVUP :			LV_UP(' ');break;
 		case SAVE :			savescene();break;
 		case LOAD :			loadscene();break;
@@ -773,9 +784,14 @@ void Game::goon(){
 						init(prevstate);
 					
 					break;
-	case ENEMYTURN: ai();
+	case ENEMYTURN: {
+						if (canfight)
+						{
+							ai();
+							canfight = false;
+						}
+					}break;
 					//mapover();
-					break;
 	}
 }
 
@@ -1876,6 +1892,15 @@ bool Enemy::move(int d, Map &map)
 bool Enemy::canmove(char maptype, int who_on_it)
 {
 	return Soldier::canmove(maptype, who_on_it);
+}
+
+void Enemy::stop(bool type)
+{
+	Soldier::stop(type);
+	if (getType() == 3)
+	{
+		ACT.now = ACT.org;
+	}
 }
 
 FightTurn::FightTurn(){
@@ -4580,63 +4605,54 @@ bool AI::isFinish(){
 void AI::action(){
 	if(isInit){
 		if (isStarted){
-			//if (enemys[current].getvalue(HPvalue).now > 0)
-			{
-				cursor->set<float>(POSX, -(float)enemyPoint[current].x - 0.5);
-				cursor->set<float>(POSY, -(float)enemyPoint[current].y - 0.5);
-				Rect r = map->getdata(enemyPoint[current].x, enemyPoint[current].y);
-				if (r.who_on_it == -current - 1)
-					cursor->enter(*map, friends, enemys, Z);
-				else{
-					if (enemyPoint[current].x > 0){
-						r = map->getdata(enemyPoint[current].x + 1, enemyPoint[current].y);
-						if (r.who_on_it == -current - 1){
-							cursor->set<float>(POSX, -((float)enemyPoint[current].x + 1.0 + 0.5));
-							cursor->set<float>(POSY, -((float)enemyPoint[current].y) - 0.5);
-						}
+			cursor->set<float>(POSX, -(float)enemyPoint[current].x - 0.5);
+			cursor->set<float>(POSY, -(float)enemyPoint[current].y - 0.5);
+			Rect r = map->getdata(enemyPoint[current].x, enemyPoint[current].y);
+			if (r.who_on_it == -current - 1)
+				cursor->enter(*map, friends, enemys, Z);
+			else{
+				if (enemyPoint[current].x > 0){
+					r = map->getdata(enemyPoint[current].x + 1, enemyPoint[current].y);
+					if (r.who_on_it == -current - 1){
+						cursor->set<float>(POSX, -((float)enemyPoint[current].x + 1.0 + 0.5));
+						cursor->set<float>(POSY, -((float)enemyPoint[current].y) - 0.5);
 					}
-					if (enemyPoint[current].x<mapWidth){
-						r = map->getdata(enemyPoint[current].x - 1, enemyPoint[current].y);
-						if (r.who_on_it == -current - 1){
-							cursor->set<float>(POSX, -((float)enemyPoint[current].x - 1.0 + 0.5));
-							cursor->set<float>(POSY, -((float)enemyPoint[current].y) - 0.5);
-						}
-					}
-					if (enemyPoint[current].y>0){
-						r = map->getdata(enemyPoint[current].x, enemyPoint[current].y + 1);
-						if (r.who_on_it == -current - 1){
-							cursor->set<float>(POSX, -((float)enemyPoint[current].x) - 0.5);
-							cursor->set<float>(POSY, -((float)enemyPoint[current].y + 1.0 + 0.5));
-						}
-					}
-					if (enemyPoint[current].y < mapHeight){
-						r = map->getdata(enemyPoint[current].x, enemyPoint[current].y - 1);
-						if (r.who_on_it == -current - 1){
-							cursor->set<float>(POSX, -((float)enemyPoint[current].x) - 0.5);
-							cursor->set<float>(POSY, -((float)enemyPoint[current].y - 1.0 + 0.5));
-						}
-					}
-
-					if (r.who_on_it != -current - 1)
-					{
-						cursor->set<float>(POSX, -((float)enemyPoint[current].x + 0.1));
-						cursor->set<float>(POSY, -((float)enemyPoint[current].y + 0.1));
-						map->setdata(enemyPoint[current].x, enemyPoint[current].y, -current - 1);
-					}
-
-					cursor->enter(*map, friends, enemys, Z);
 				}
-				if (enemys[current].get<int>(STATE) != ACTIVE){
-					cout << "break";
-				};
-				isStarted = false;
+				if (enemyPoint[current].x<mapWidth){
+					r = map->getdata(enemyPoint[current].x - 1, enemyPoint[current].y);
+					if (r.who_on_it == -current - 1){
+						cursor->set<float>(POSX, -((float)enemyPoint[current].x - 1.0 + 0.5));
+						cursor->set<float>(POSY, -((float)enemyPoint[current].y) - 0.5);
+					}
+				}
+				if (enemyPoint[current].y>0){
+					r = map->getdata(enemyPoint[current].x, enemyPoint[current].y + 1);
+					if (r.who_on_it == -current - 1){
+						cursor->set<float>(POSX, -((float)enemyPoint[current].x) - 0.5);
+						cursor->set<float>(POSY, -((float)enemyPoint[current].y + 1.0 + 0.5));
+					}
+				}
+				if (enemyPoint[current].y < mapHeight){
+					r = map->getdata(enemyPoint[current].x, enemyPoint[current].y - 1);
+					if (r.who_on_it == -current - 1){
+						cursor->set<float>(POSX, -((float)enemyPoint[current].x) - 0.5);
+						cursor->set<float>(POSY, -((float)enemyPoint[current].y - 1.0 + 0.5));
+					}
+				}
+
+				if (r.who_on_it != -current - 1)
+				{
+					cursor->set<float>(POSX, -((float)enemyPoint[current].x + 0.1));
+					cursor->set<float>(POSY, -((float)enemyPoint[current].y + 0.1));
+					map->setdata(enemyPoint[current].x, enemyPoint[current].y, -current - 1);
+				}
+
+				cursor->enter(*map, friends, enemys, Z);
 			}
-// 			else
-// 			{
-// 				if (!pathAttack.empty())
-// 					pathAttack.pop();
-// 			}
-			
+			if (enemys[current].get<int>(STATE) != ACTIVE){
+				cout << "break";
+			};
+			isStarted = false;
 		}
 
 		if(pathAttack.empty()){
@@ -4794,7 +4810,7 @@ void AI::InitHard(){
 		y=groupsAction[enemysGroups[current]].y;
 		x=x*3+1;
 		y=y*3+1;
-		if(x>=0 && y>=0){
+		if (x >= 0 && y >= 0 && x < mapWidth - 1 && y < mapHeight){
 			int currentX=(int)(enemys[current].get<float>(POSX)+0.5);
 			int currentY=(int)(enemys[current].get<float>(POSY)+0.5);
 			if(mapTable[y-1][x]!=-1 && mapTable[y+1][x]!=-1 && mapTable[y][x-1]!=-1 && mapTable[y][x+1]!=-1){
